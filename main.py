@@ -69,14 +69,15 @@ def get_title(url):
     title = None
     count = 0
 
+    print("######################################################")
+    print("get_title")
+
     while title is None:
         title = get_soup(url).find('meta', attrs={'name': 'description'})
         count += 1
         print(count)
         time.sleep(1)
 
-    print("######################################################")
-    print("get_title")
     # print(title.get('content'))
     return title.get('content')
 
@@ -113,6 +114,11 @@ def download_image(path, image_url):
 
     # 画像として一旦保存してみて，画像でなかった場合はtype=Noneとなるので再ダウンロードする
     while image_type is None:
+        if os.path.exists(path):
+            image_type = imghdr.what(path)
+            if image_type is not None:
+                break
+
         scraper = cloudscraper.create_scraper(
             browser={
                 'browser': 'chrome',
@@ -128,7 +134,7 @@ def download_image(path, image_url):
         image_type = imghdr.what(path)
         count += 1
         print(count)
-        time.sleep(1)
+        time.sleep(0.5)
 
 
 # image_url_listに含まれる画像URLの画像を1つずつダウンロードする
@@ -153,7 +159,7 @@ def download_images(title, image_url_list):
         name += ".jpg"
 
         download_image(os.path.join(save_path, name), image_url)
-        time.sleep(1)
+        # time.sleep(1)
 
 
 def main_function(url):
@@ -164,5 +170,11 @@ def main_function(url):
 
 
 if __name__ == '__main__':
-    input_url = 'https://ja.hentai-cosplays.com/image/laughing-fragrance-azuma-/'
-    main_function(input_url)
+    file_name = './input_url_list.txt'
+    file = open(file_name)
+    input_url_list = file.readlines()
+
+    for input_url in input_url_list:
+        input_url = input_url.replace('\n','')
+        print('input_url: ' + input_url)
+        main_function(input_url)
