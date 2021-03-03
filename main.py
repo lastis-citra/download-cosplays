@@ -153,7 +153,7 @@ def download_images(title, image_url_list):
 
         name = str(count)
 
-        if count < 9:
+        if count <= 9:
             name = "0" + name
 
         name += ".jpg"
