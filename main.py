@@ -34,7 +34,7 @@ def multiple_replace(text, adict):
         """ マッチした文字列の元であるkeyを返す
         """
         for key in adict.keys():
-            print(key)
+            # print(key)
             if re.search(key, _text):
                 return key
 
