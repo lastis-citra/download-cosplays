@@ -4,6 +4,7 @@ import time
 import imghdr
 from bs4 import BeautifulSoup
 import re
+import random, string
 
 # Windowsフォルダ名の禁則処理用
 trans_tone = {
@@ -64,6 +65,10 @@ def get_soup(url):
     return soup
 
 
+def random_name(n):
+   return ''.join(random.choices(string.ascii_letters + string.digits, k=n))
+
+
 # フォルダ名にするためにタイトルを取得する
 def get_title(url):
     title = None
@@ -88,9 +93,13 @@ def get_image_urls(story_url):
     a = None
     count = 0
 
+    print("######################################################")
+    print("get_image_urls")
+
     while a is None:
         soup = get_soup(story_url)
-        a = soup.find('a', attrs={'class': 'left'})
+        # a = soup.find('a', attrs={'class': 'left'})
+        a = soup.find('amp-img')
         count += 1
         print(count)
         time.sleep(1)
