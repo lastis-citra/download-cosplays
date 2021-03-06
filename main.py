@@ -74,14 +74,14 @@ def get_title(url):
     title = None
     count = 0
 
-    print("######################################################")
-    print("get_title")
+    print('get_title ', end='')
 
     while title is None:
         title = get_soup(url).find('meta', attrs={'name': 'description'})
         count += 1
-        print(count)
+        print(count, end='')
         time.sleep(1)
+    print()
 
     # print(title.get('content'))
     return title.get('content')
@@ -93,19 +93,18 @@ def get_image_urls(story_url):
     a = None
     count = 0
 
-    print("######################################################")
-    print("get_image_urls")
+    print('get_image_urls ', end='')
 
     while a is None:
         soup = get_soup(story_url)
         # a = soup.find('a', attrs={'class': 'left'})
         a = soup.find('amp-img')
         count += 1
-        print(count)
+        print(count, end='')
         time.sleep(1)
+    print()
 
-    print("######################################################")
-    print("download_images")
+    print('download_images')
 
     image_url_list = []
     for a_tag in soup.find_all('amp-img'):
@@ -150,8 +149,8 @@ def download_image(path, image_url):
 # image_url_listに含まれる画像URLの画像を1つずつダウンロードする
 def download_images(title, image_url_list):
     save_directory = multiple_replace(title, trans_tone)
-    save_path = os.path.join("images", save_directory)
-    if save_directory not in os.listdir("./images/"):
+    save_path = os.path.join('images', save_directory)
+    if save_directory not in os.listdir('./images/'):
         os.mkdir(save_path)
 
     image_count = 0
