@@ -183,7 +183,12 @@ if __name__ == '__main__':
     file = open(file_name)
     input_url_list = file.readlines()
 
+    line_count = 0
+
     for input_url in input_url_list:
+        print("######################################################")
+        line_count += 1
         input_url = input_url.replace('\n','')
+        print(str(line_count) + '/' + str(len(input_url_list)))
         print('input_url: ' + input_url)
         main_function(input_url)
