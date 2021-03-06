@@ -142,8 +142,9 @@ def download_image(path, image_url):
 
         image_type = imghdr.what(path)
         count += 1
-        print(count)
+        print(count, end='')
         time.sleep(0.5)
+    print()
 
 
 # image_url_listに含まれる画像URLの画像を1つずつダウンロードする
@@ -153,16 +154,16 @@ def download_images(title, image_url_list):
     if save_directory not in os.listdir("./images/"):
         os.mkdir(save_path)
 
-    count = 0
+    image_count = 0
 
     for image_url in image_url_list:
-        count += 1
-        print(count, " ", end="")
-        print(image_url)
+        image_count += 1
+        print(image_count, '/', len(image_url_list), ': ', end='')
+        print(image_url, ' ', end='')
 
-        name = str(count)
+        name = str(image_count)
 
-        if count <= 9:
+        if image_count <= 9:
             name = "0" + name
 
         name += ".jpg"
@@ -189,6 +190,6 @@ if __name__ == '__main__':
         print("######################################################")
         line_count += 1
         input_url = input_url.replace('\n','')
-        print(str(line_count) + '/' + str(len(input_url_list)))
+        print(line_count, '/', len(input_url_list))
         print('input_url: ' + input_url)
         main_function(input_url)
