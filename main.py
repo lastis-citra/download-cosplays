@@ -142,6 +142,10 @@ def download_image(path, image_url):
         image_type = imghdr.what(path)
         count += 1
         print(count, end='')
+
+        if count > 10:
+            continue
+
         time.sleep(0.5)
     print()
 
