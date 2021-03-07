@@ -160,12 +160,7 @@ def download_images(title, image_url_list):
         print(image_count, '/', len(image_url_list), ': ', end='')
         print(image_url, ' ', end='')
 
-        name = str(image_count)
-
-        if image_count <= 9:
-            name = "0" + name
-
-        name += ".jpg"
+        name = str(image_count) + '.jpg'
 
         download_image(os.path.join(save_path, name), image_url)
         # time.sleep(1)
