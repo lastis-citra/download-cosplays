@@ -143,8 +143,8 @@ def download_image(path, image_url):
         count += 1
         print(count, end='')
 
-        if count > 10:
-            continue
+        if count >= 10:
+            break
 
         time.sleep(0.5)
     print()
