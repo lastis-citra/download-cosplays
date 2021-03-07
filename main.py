@@ -1,10 +1,12 @@
-import cloudscraper
-import os
-import time
 import imghdr
-from bs4 import BeautifulSoup
+import os
+import random
 import re
-import random, string
+import string
+import time
+
+import cloudscraper
+from bs4 import BeautifulSoup
 
 # Windowsフォルダ名の禁則処理用
 trans_tone = {
@@ -163,9 +165,9 @@ def download_images(title, image_url_list):
             save_path += '_1'
             save_directory += '_1'
             # エラーになった場合，小文字に統一して一致する場合のみ，初回は別名でフォルダを作成する
-            if save_directory.lower() in (str.lower() for str in os.listdir('./images/')) and \
-                save_directory not in os.listdir('./images/'):
-                os.mkdir(save_path)
+            if save_directory.lower() in (s.lower() for s in os.listdir('./images/')):
+                if save_directory not in os.listdir('./images/'):
+                    os.mkdir(save_path)
 
     image_count = 0
 
