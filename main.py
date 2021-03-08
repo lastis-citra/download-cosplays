@@ -130,6 +130,8 @@ def download_image(path, image_url):
             if image_type is not None:
                 break
 
+        count += 1
+
         scraper = cloudscraper.create_scraper(
             browser={
                 'browser': 'chrome',
@@ -142,21 +144,22 @@ def download_image(path, image_url):
             res = scraper.get(image_url)
         except Exception as e:
             print('ERROR', e.args)
-            return
+            break
         if res.status_code != 200:
+            print(count, end='')
+            time.sleep(0.5)
             continue
 
         with open(path, 'wb') as f:
             f.write(res.content)
 
+        time.sleep(0.5)
         image_type = imghdr.what(path)
-        count += 1
+        # print(image_type)
         print(count, end='')
 
         if count >= 10:
             break
-
-        time.sleep(0.5)
     print()
 
 
