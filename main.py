@@ -143,7 +143,7 @@ def download_image(path, image_url):
             print('ERROR', e.args)
             return
         if res.status_code != 200:
-            return
+            continue
 
         with open(path, 'wb') as f:
             f.write(res.content)
