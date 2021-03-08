@@ -153,10 +153,10 @@ def download_image(path, image_url):
         with open(path, 'wb') as f:
             f.write(res.content)
 
+        print(count, end='')
         time.sleep(0.5)
         image_type = imghdr.what(path)
         # print(image_type)
-        print(count, end='')
 
         if count >= 10:
             break
