@@ -137,9 +137,16 @@ def download_image(path, image_url):
             }
         )
 
-        html = scraper.get(image_url).content
+        try:
+            res = scraper.get(image_url)
+        except Exception as e:
+            print('ERROR', e.args)
+            return
+        if res.status_code != 200:
+            return
+
         with open(path, 'wb') as f:
-            f.write(html)
+            f.write(res.content)
 
         image_type = imghdr.what(path)
         count += 1
