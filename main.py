@@ -202,8 +202,8 @@ def main_function(url):
 
 if __name__ == '__main__':
     file_name = './input_url_list.txt'
-    file = open(file_name)
-    input_url_list = file.readlines()
+    with open(file_name, 'r', errors='replace') as file:
+        input_url_list = file.readlines()
 
     line_count = 0
 
