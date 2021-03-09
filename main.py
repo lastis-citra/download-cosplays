@@ -4,9 +4,18 @@ import random
 import re
 import string
 import time
+import logging
+from threading import Thread
+from queue import Queue
 
 import cloudscraper
 from bs4 import BeautifulSoup
+
+logging.basicConfig(level=logging.INFO, format='%(threadName)s: %(message)s')
+
+# グローバル変数をセット
+num_fetch_threads = 5
+queue = Queue()
 
 # Windowsフォルダ名の禁則処理用
 trans_tone = {
@@ -119,54 +128,113 @@ def get_image_urls(story_url):
 
 
 # image_urlの画像を指定フォルダに実際にダウンロードする
-def download_image(path, image_url):
-    image_type = None
-    count = 0
+def download_image(q):
+    while True:
+        item = q.get()
+        if item is None:
+            break
 
-    # 画像として一旦保存してみて，画像でなかった場合はtype=Noneとなるので再ダウンロードする
-    while image_type is None:
-        if os.path.exists(path):
-            image_type = imghdr.what(path)
-            if image_type is not None:
+        image_count = item[0]
+        image_url = item[1]
+        path = item[2]
+        all_num = item[3]
+
+        # logging.info(str(image_count) + ' ' + image_url)
+        logging.info('%s / %s %s', image_count, all_num, image_url)
+
+        image_type = None
+        count = 0
+
+        # 画像として一旦保存してみて，画像でなかった場合はtype=Noneとなるので再ダウンロードする
+        while image_type is None:
+            if os.path.exists(path):
+                image_type = imghdr.what(path)
+                if image_type is not None:
+                    break
+
+            count += 1
+
+            scraper = cloudscraper.create_scraper(
+                browser={
+                    'browser': 'chrome',
+                    'platform': 'windows',
+                    'desktop': True
+                }
+            )
+
+            try:
+                res = scraper.get(image_url)
+            except Exception as e:
+                print('ERROR', e.args)
                 break
+            if res.status_code != 200:
+                # print(count, end='')
+                # time.sleep(0.5)
+                continue
 
-        count += 1
+            with open(path, 'wb') as f:
+                f.write(res.content)
 
-        scraper = cloudscraper.create_scraper(
-            browser={
-                'browser': 'chrome',
-                'platform': 'windows',
-                'desktop': True
-            }
-        )
+            # print(count, end='')
+            # time.sleep(0.5)
+            image_type = imghdr.what(path)
+            # print(image_type)
 
-        try:
-            res = scraper.get(image_url)
-        except Exception as e:
-            print('ERROR', e.args)
-            break
-        if res.status_code != 200:
-            print(count, end='')
-            time.sleep(0.5)
-            continue
+            if count >= 10:
+                break
+        # print()
 
-        with open(path, 'wb') as f:
-            f.write(res.content)
+        q.task_done()
 
-        print(count, end='')
-        time.sleep(0.5)
-        image_type = imghdr.what(path)
-        # print(image_type)
-
-        if count >= 10:
-            break
-    print()
+# def download_image(path, image_url):
+#     image_type = None
+#     count = 0
+#
+#     # 画像として一旦保存してみて，画像でなかった場合はtype=Noneとなるので再ダウンロードする
+#     while image_type is None:
+#         if os.path.exists(path):
+#             image_type = imghdr.what(path)
+#             if image_type is not None:
+#                 break
+#
+#         count += 1
+#
+#         scraper = cloudscraper.create_scraper(
+#             browser={
+#                 'browser': 'chrome',
+#                 'platform': 'windows',
+#                 'desktop': True
+#             }
+#         )
+#
+#         try:
+#             res = scraper.get(image_url)
+#         except Exception as e:
+#             print('ERROR', e.args)
+#             break
+#         if res.status_code != 200:
+#             print(count, end='')
+#             time.sleep(0.5)
+#             continue
+#
+#         with open(path, 'wb') as f:
+#             f.write(res.content)
+#
+#         print(count, end='')
+#         time.sleep(0.5)
+#         image_type = imghdr.what(path)
+#         # print(image_type)
+#
+#         if count >= 10:
+#             break
+#     print()
 
 
 # image_url_listに含まれる画像URLの画像を1つずつダウンロードする
 def download_images(title, image_url_list):
     save_directory = multiple_replace(title, trans_tone)
     save_path = os.path.join('images', save_directory)
+    print('save_directory: ' + save_directory)
 
     # この方法だと大文字と小文字が違うディレクトリが引っかからないが，実際に作ろうとするとエラーになる
     if save_directory not in os.listdir('./images/'):
@@ -184,12 +252,21 @@ def download_images(title, image_url_list):
 
     for image_url in image_url_list:
         image_count += 1
-        print(image_count, '/', len(image_url_list), ': ', end='')
-        print(image_url, ' ', end='')
-
         name = str(image_count) + '.jpg'
+        # print('queued: ', image_count, image_url, name)
+        queue.put((image_count, image_url, os.path.join(save_path, name), len(image_url_list)))
 
-        download_image(os.path.join(save_path, name), image_url)
+    queue.join()
+
+
+    # for image_url in image_url_list:
+    #     image_count += 1
+    #     print(image_count, '/', len(image_url_list), ': ', end='')
+    #     print(image_url, ' ', end='')
+    #
+    #     name = str(image_count) + '.jpg'
+    #
+    #     download_image(os.path.join(save_path, name), image_url)
         # time.sleep(1)
 
 
@@ -205,6 +282,12 @@ if __name__ == '__main__':
     with open(file_name, 'r', errors='replace') as file:
         input_url_list = file.readlines()
 
+    # スレッドを設定する
+    for i in range(num_fetch_threads):
+        worker = Thread(target=download_image, args=(queue,))
+        worker.setDaemon(True)
+        worker.start()
+
     line_count = 0
 
     for input_url in input_url_list:
@@ -214,3 +297,4 @@ if __name__ == '__main__':
         print(line_count, '/', len(input_url_list))
         print('input_url: ' + input_url)
         main_function(input_url)
+
