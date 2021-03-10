@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup
 logging.basicConfig(level=logging.INFO, format='%(threadName)s: %(message)s')
 
 # グローバル変数をセット
-num_fetch_threads = 5
+num_fetch_threads = 10
 queue = Queue()
 
 # Windowsフォルダ名の禁則処理用
@@ -139,8 +139,7 @@ def download_image(q):
         path = item[2]
         all_num = item[3]
 
-        # logging.info(str(image_count) + ' ' + image_url)
-        logging.info('%s / %s %s', image_count, all_num, image_url)
+        # logging.info('%s / %s %s', image_count, all_num, image_url)
 
         image_type = None
         count = 0
@@ -150,9 +149,12 @@ def download_image(q):
             if os.path.exists(path):
                 image_type = imghdr.what(path)
                 if image_type is not None:
+                    logging.info('%s / %s %s [Exists]', image_count, all_num, image_url)
                     break
 
             count += 1
+
+            logging.info('%s / %s %s [try:%s]', image_count, all_num, image_url, count)
 
             scraper = cloudscraper.create_scraper(
                 browser={
@@ -252,7 +254,8 @@ def download_images(title, image_url_list):
 
     for image_url in image_url_list:
         image_count += 1
-        name = str(image_count) + '.jpg'
+        ext = image_url.split('.')[-1]
+        name = str(image_count) + '.' + ext
         # print('queued: ', image_count, image_url, name)
         queue.put((image_count, image_url, os.path.join(save_path, name), len(image_url_list)))
 
