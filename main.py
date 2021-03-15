@@ -129,7 +129,9 @@ def get_image_urls(story_url):
 
 # image_urlの画像を指定フォルダに実際にダウンロードする
 def download_image(q):
-    while True:
+    retry_flag = True
+
+    while retry_flag:
         item = q.get()
         if item is None:
             break
@@ -172,7 +174,9 @@ def download_image(q):
             if res.status_code != 200:
                 # print(count, end='')
                 # time.sleep(0.5)
-                continue
+                logging.error('%s is error status [%s]', image_url, res.status_code)
+                retry_flag = False
+                break
 
             with open(path, 'wb') as f:
                 f.write(res.content)
@@ -183,7 +187,8 @@ def download_image(q):
             # print(image_type)
 
             if count >= 10:
-                break
+                logging.error('%s retry count exceeds 10 times')
+                retry_flag = False
         # print()
 
         q.task_done()
