@@ -174,9 +174,12 @@ def download_image(q):
             if res.status_code != 200:
                 # print(count, end='')
                 # time.sleep(0.5)
-                logging.error('%s is error status [%s]', image_url, res.status_code)
-                retry_flag = False
-                break
+                if res.status_code == 404:
+                    logging.error('%s is error status [%s]', image_url, res.status_code)
+                    retry_flag = False
+                    break
+                else:
+                    continue
 
             with open(path, 'wb') as f:
                 f.write(res.content)
