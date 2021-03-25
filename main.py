@@ -175,7 +175,7 @@ def download_image(q):
                 # print(count, end='')
                 # time.sleep(0.5)
                 if res.status_code == 404:
-                    logging.error('%s is error status [%s]', image_url, res.status_code)
+                    logging.error('ERROR!!! %s is error status [%s]', image_url, res.status_code)
                     retry_flag = False
                     break
                 else:
@@ -190,8 +190,9 @@ def download_image(q):
             # print(image_type)
 
             if count >= 10:
-                logging.error('%s retry count exceeds 10 times')
+                logging.error('ERROR!!! %s retry count exceeds 10 times', image_url)
                 retry_flag = False
+                break
         # print()
 
         q.task_done()
