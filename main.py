@@ -145,9 +145,12 @@ def download_image(q):
 
         image_type = None
         count = 0
+        size_check = True
 
         # 画像として一旦保存してみて，画像でなかった場合はtype=Noneとなるので再ダウンロードする
-        while image_type is None:
+        # while image_type is None:
+        # ダウンロードした画像のサイズがレスポンスヘッダと同じであればOK
+        while size_check:
             if os.path.exists(path):
                 image_type = imghdr.what(path)
                 if image_type is not None:
@@ -181,8 +184,24 @@ def download_image(q):
                 else:
                     continue
 
+            res_size = res.headers.get("Content-Length")
+
+            if res_size is None:
+                continue
+
             with open(path, 'wb') as f:
                 f.write(res.content)
+
+            downloaded_size = os.path.getsize(path)
+
+            # logging.info('%s / %s %s res: %s - downloaded: %s', image_count, all_num, image_url, res_size, downloaded_size)
+
+            if int(res_size) == downloaded_size:
+                size_check = False
+            else:
+                # サイズが合わない場合は一旦削除してリトライする
+                os.remove(path)
+                logging.error('ERROR!!! %s is error size [%s/%s]', image_url, downloaded_size, res_size)
 
             # print(count, end='')
             # time.sleep(0.5)
