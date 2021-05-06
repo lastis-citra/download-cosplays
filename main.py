@@ -7,6 +7,7 @@ import time
 import logging
 from threading import Thread
 from queue import Queue
+import send2trash
 
 import cloudscraper
 from bs4 import BeautifulSoup
@@ -200,8 +201,9 @@ def download_image(q):
                 size_check = False
             else:
                 # サイズが合わない場合は一旦削除してリトライする
-                os.remove(path)
+                send2trash.send2trash(path)
                 logging.error('ERROR!!! %s is error size [%s/%s]', image_url, downloaded_size, res_size)
+                continue
 
             # print(count, end='')
             # time.sleep(0.5)
